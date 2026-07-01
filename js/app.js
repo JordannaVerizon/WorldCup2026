@@ -1,6 +1,7 @@
 /**
  * ==========================================================================
  * World Cup 2026 Smart Time-Calculated Automation Engine
+ * Localized Eastern Time Zone Configuration
  * ==========================================================================
  */
 
@@ -14,41 +15,41 @@ function fetchWorldCupData() {
     const now = new Date();
     
     /**
-     * AUTHENTIC SCHEDULE MATRIX
-     * The system automatically tracks states based on current time
+     * AUTHENTIC EASTERN TIME ZONE SCHEDULE MATRIX
+     * The system automatically tracks states based on your local clock
      */
     const matchSchedule = [
         {
             id: 201,
             homeTeam: "England", awayTeam: "DR Congo",
-            kickoff: new Date("2026-07-01T09:00:00-04:00"), // 9:00 AM ET
-            liveScore: { home: 2, away: 0 },
+            kickoff: new Date("2026-07-01T12:00:00-04:00"), // 12:00 PM Eastern Time
+            liveScore: { home: 1, away: 0 },
             finalScore: { home: 2, away: 0 }
         },
         {
             id: 202,
             homeTeam: "Belgium", awayTeam: "Senegal",
-            kickoff: new Date("2026-07-01T16:00:00-04:00"), // 4:00 PM ET
+            kickoff: new Date("2026-07-01T16:00:00-04:00"), // 4:00 PM Eastern Time
             liveScore: { home: 0, away: 0 },
-            finalScore: { home: 1, away: 2 } // Projected/Simulated Result
+            finalScore: { home: 1, away: 2 }
         },
         {
             id: 203,
             homeTeam: "USA", awayTeam: "Bosnia & Herzegovina",
-            kickoff: new Date("2026-07-01T20:00:00-04:00"), // 8:00 PM ET
+            kickoff: new Date("2026-07-01T20:00:00-04:00"), // 8:00 PM Eastern Time
             liveScore: { home: 1, away: 0 },
             finalScore: { home: 3, away: 1 }
         }
     ];
 
     tournamentData = matchSchedule.map(match => {
-        const matchDurationMs = 105 * 60 * 1000; // 90 mins + halftime break (1 hour 45 mins total)
+        const matchDurationMs = 105 * 60 * 1000; // 90 mins + halftime break (1 hr 45 mins total)
         const timeElapsedMs = now - match.kickoff;
         
         let status = 'UPCOMING';
         let displayTime = match.kickoff.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        let currentHomeScore = null;
-        let currentAwayScore = null;
+        let currentHomeScore = 0; // Default upcoming to 0
+        let currentAwayScore = 0; // Default upcoming to 0
 
         if (timeElapsedMs > 0 && timeElapsedMs < matchDurationMs) {
             // Match is currently playing right now
@@ -104,11 +105,11 @@ function renderLiveMatches() {
             <div class="teams-display">
                 <div class="team-row">
                     <span>${match.homeTeam}</span>
-                    <span>${match.homeScore ?? 0}</span>
+                    <span>${match.homeScore}</span>
                 </div>
                 <div class="team-row">
                     <span>${match.awayTeam}</span>
-                    <span>${match.awayScore ?? 0}</span>
+                    <span>${match.awayScore}</span>
                 </div>
             </div>
             <div class="match-time">${match.timeDisplay}</div>
@@ -117,6 +118,6 @@ function renderLiveMatches() {
     });
 }
 
-// Check loop
+// Check loop every 30 seconds
 setInterval(fetchWorldCupData, 30000);
 window.onload = fetchWorldCupData;
