@@ -1,46 +1,39 @@
 /**
  * ==========================================================================
- * World Cup 2026 Live API Connection Engine
+ * World Cup 2026 Live API Connection Engine (Football-Data.org Edition)
  * ==========================================================================
  */
 
-// Configuration Options
-const API_URL = "https://v3.football.api-sports.io/fixtures?league=1&season=2026";
-const API_KEY = "YOUR_API_KEY_HERE"; // Replace with your free API-Football or mockup key
+// Configuration Options - WC is League Code 'WC' in Football-Data.org
+const API_URL = "https://api.football-data.org/v4/competitions/WC/matches";
+const API_KEY = "5b7a7ac5a9eb460699b28b314dce5968"; 
 
-// Global variable to cache current match states
 let tournamentData = [];
 
 /**
- * Asynchronously fetches live data from the sports data provider
+ * Asynchronously fetches live data from Football-Data.org
  */
 async function fetchWorldCupData() {
     const liveTicker = document.getElementById('live-ticker');
     
     try {
-        // If you don't have an API key yet, this will catch and use the fallback mock data below
-        if (API_KEY === "YOUR_API_KEY_HERE") {
-            throw new Error("API Key not configured. Using high-fidelity local simulation mode.");
-        }
-
         const response = await fetch(API_URL, {
             method: "GET",
             headers: {
-                "x-rapidapi-host": "v3.football.api-sports.io",
-                "x-rapidapi-key": API_KEY
+                "X-Auth-Token": API_KEY
             }
         });
 
-        if (!response.ok) throw new Error("Network response was not stable");
+        if (!response.ok) throw new Error("API Limit reached or invalid configuration");
         
         const data = await response.json();
-        tournamentData = data.response;
+        tournamentData = data.matches;
         
         liveTicker.innerHTML = "⚡ Live Feed Connected (Sync Active)";
         initApp();
 
     } catch (error) {
-        console.warn(error.message);
+        console.warn("API Error, falling back to local simulation engine:", error.message);
         liveTicker.innerHTML = "🔮 Simulation Engine Active (Local Mode)";
         loadMockLiveMatches();
     }
@@ -56,75 +49,65 @@ function initApp() {
 }
 
 /**
- * Iterates through match structures and renders clean HTML UI components
+ * Renders data dynamically based on the Football-Data.org JSON schema
  */
 function renderLiveMatches() {
     const grid = document.getElementById('matches-grid');
     if (!grid) return;
     grid.innerHTML = '';
 
-    tournamentData.forEach(match => {
-        const status = match.fixture.status.short;
+    // Filter for active or upcoming fixtures
+    const visibleMatches = tournamentData.filter(m => ['TIMED', 'IN_PLAY', 'PAUSED'].includes(m.status));
+
+    if (visibleMatches.length === 0) {
+        grid.innerHTML = `<div style="color: var(--text-secondary); grid-column: 1/-1;">No live matches right now. Check back at match time!</div>`;
+        return;
+    }
+
+    visibleMatches.forEach(match => {
+        const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
+        const card = document.createElement('div');
+        card.className = `match-card ${isLive ? 'live' : 'upcoming'}`;
         
-        // Filter out finished games, only grab Live or Scheduled matches
-        if (['1H', '2H', 'ET', 'P', 'LIVE', 'NS'].includes(status)) {
-            const isLive = status !== 'NS';
-            const card = document.createElement('div');
-            card.className = `match-card ${isLive ? 'live' : 'upcoming'}`;
-            
-            // Format match timing display cleanly
-            let timeDisplay = !isLive 
-                ? new Date(match.fixture.date).toLocaleDateString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'}) 
-                : `Minute: ${match.fixture.status.elapsed}'`;
-            
-            card.innerHTML = `
-                <div class="match-status">${isLive ? '● LIVE NOW' : 'UPCOMING MATCH'}</div>
-                <div class="teams-display">
-                    <div class="team-row">
-                        <span>${match.teams.home.name}</span>
-                        <span>${match.goals.home ?? 0}</span>
-                    </div>
-                    <div class="team-row">
-                        <span>${match.teams.away.name}</span>
-                        <span>${match.goals.away ?? 0}</span>
-                    </div>
+        let timeDisplay = !isLive 
+            ? new Date(match.utcDate).toLocaleDateString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'}) 
+            : "Match in Progress";
+        
+        card.innerHTML = `
+            <div class="match-status">${isLive ? '● LIVE NOW' : 'UPCOMING MATCH'}</div>
+            <div class="teams-display">
+                <div class="team-row">
+                    <span>${match.homeTeam.name || 'TBD'}</span>
+                    <span>${match.score.fullTime.home ?? 0}</span>
                 </div>
-                <div class="match-time">${timeDisplay}</div>
-            `;
-            grid.appendChild(card);
-        }
+                <div class="team-row">
+                    <span>${match.awayTeam.name || 'TBD'}</span>
+                    <span>${match.score.fullTime.away ?? 0}</span>
+                </div>
+            </div>
+            <div class="match-time">${timeDisplay}</div>
+        `;
+        grid.appendChild(card);
     });
 }
 
 /**
- * Fail-safe Mock Generator to populate the modern look instantly
- * without needing paid premium endpoints during local development
+ * Backup fallback simulation data
  */
 function loadMockLiveMatches() {
+    // If the API server is down or free tier limit is hit, this keeps the UI beautiful
     tournamentData = [
         {
-            fixture: { id: 101, status: { short: '1H', elapsed: 34 }, date: "2026-07-01T15:00:00Z" },
-            teams: { home: { name: "USA" }, away: { name: "Belgium" } },
-            goals: { home: 2, away: 1 }
-        },
-        {
-            fixture: { id: 102, status: { short: 'NS', elapsed: 0 }, date: "2026-07-02T20:00:00Z" },
-            teams: { home: { name: "Argentina" }, away: { name: "Denmark" } },
-            goals: { home: null, away: null }
-        },
-        {
-            fixture: { id: 103, status: { short: 'NS', elapsed: 0 }, date: "2026-07-03T18:00:00Z" },
-            teams: { home: { name: "Germany" }, away: { name: "Croatia" } },
-            goals: { home: null, away: null }
+            status: 'IN_PLAY',
+            utcDate: "2026-07-01T15:00:00Z",
+            homeTeam: { name: "USA" }, awayTeam: { name: "Belgium" },
+            score: { fullTime: { home: 2, away: 1 } }
         }
     ];
     initApp();
 }
 
-// Check for live score updates every 60 seconds
-setInterval(() => {
-    fetchWorldCupData();
-}, 60000);
+// Auto-check updates every 60 seconds
+setInterval(fetchWorldCupData, 60000);
 
-// Initialize when browser loads file elements
 window.onload = fetchWorldCupData;
