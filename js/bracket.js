@@ -1,41 +1,56 @@
-function renderBracket() {
+/**
+ * ==========================================================================
+ * World Cup 2026 Live Bracket Processing Engine
+ * ==========================================================================
+ */
+
+function renderBracket(apiMatches) {
     const bracketElement = document.getElementById('bracket');
     if (!bracketElement) return;
-    
-    const bracketData = [
-        {
-            roundName: "Round of 32",
-            matches: [
-                { t1: "Brazil", s1: 2, t2: "Japan", s2: 1 },
-                { t1: "France", s1: 3, t2: "Sweden", s2: 0 },
-                { t1: "England", s1: null, t2: "DR Congo", s2: null },
-                { t1: "Belgium", s1: null, t2: "Senegal", s2: null },
-                { t1: "USA", s1: null, t2: "Bosnia", s2: null }
-            ]
-        },
-        {
-            roundName: "Round of 16",
-            matches: [
-                { t1: "Brazil", s1: null, t2: "France", s2: null },
-                { t1: "TBD", s1: null, t2: "TBD", s2: null }
-            ]
-        }
-    ];
+
+    // Default historical bracket states combined with incoming API records
+    const rounds = {
+        "Round of 32": [
+            { t1: "Brazil", s1: 2, t2: "Japan", s2: 1 },
+            { t1: "France", s1: 3, t2: "Sweden", s2: 0 },
+            { 
+                t1: "England", 
+                s1: apiMatches?.find(m => m.homeTeam?.name === "England")?.score?.fullTime?.home ?? null, 
+                t2: "DR Congo", 
+                s2: apiMatches?.find(m => m.homeTeam?.name === "England")?.score?.fullTime?.away ?? null 
+            },
+            { 
+                t1: "Belgium", 
+                s1: apiMatches?.find(m => m.homeTeam?.name === "Belgium")?.score?.fullTime?.home ?? null, 
+                t2: "Senegal", 
+                s2: apiMatches?.find(m => m.homeTeam?.name === "Belgium")?.score?.fullTime?.away ?? null 
+            },
+            { 
+                t1: "USA", 
+                s1: apiMatches?.find(m => m.homeTeam?.name === "USA")?.score?.fullTime?.home ?? null, 
+                t2: "Bosnia", 
+                s2: apiMatches?.find(m => m.homeTeam?.name === "USA")?.score?.fullTime?.away ?? null 
+            }
+        ],
+        "Round of 16": [
+            { t1: "Brazil", s1: null, t2: "France", s2: null },
+            { t1: "TBD", s1: null, t2: "TBD", s2: null }
+        ]
+    };
 
     bracketElement.innerHTML = '';
 
-    bracketData.forEach(round => {
+    Object.keys(rounds).forEach(roundName => {
         const roundColumn = document.createElement('div');
         roundColumn.className = 'bracket-round';
         
         const title = document.createElement('h3');
-        title.textContent = round.roundName;
+        title.textContent = roundName;
         roundColumn.appendChild(title);
 
-        round.matches.forEach(m => {
+        rounds[roundName].forEach(m => {
             const matchContainer = document.createElement('div');
             matchContainer.className = 'bracket-match';
-            bracketElement.style.gap = "2rem";
             
             matchContainer.innerHTML = `
                 <div class="teams-display">
