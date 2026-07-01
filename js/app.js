@@ -48,18 +48,16 @@ function fetchWorldCupData() {
         
         let status = 'UPCOMING';
         let displayTime = match.kickoff.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        let currentHomeScore = 0; // Default upcoming to 0
-        let currentAwayScore = 0; // Default upcoming to 0
+        let currentHomeScore = 0; 
+        let currentAwayScore = 0; 
 
         if (timeElapsedMs > 0 && timeElapsedMs < matchDurationMs) {
-            // Match is currently playing right now
             status = 'LIVE';
             const minutesElapsed = Math.floor(timeElapsedMs / 60000);
             displayTime = `Playing Now — ${minutesElapsed >= 45 && minutesElapsed <= 60 ? 'HT' : minutesElapsed + "'"}`;
             currentHomeScore = match.liveScore.home;
             currentAwayScore = match.liveScore.away;
         } else if (timeElapsedMs >= matchDurationMs) {
-            // Match has finished
             status = 'FINISHED';
             displayTime = "Final Score";
             currentHomeScore = match.finalScore.home;
@@ -118,6 +116,5 @@ function renderLiveMatches() {
     });
 }
 
-// Check loop every 30 seconds
 setInterval(fetchWorldCupData, 30000);
 window.onload = fetchWorldCupData;
