@@ -94,10 +94,10 @@ function renderLiveMatches() {
 function loadAutomatedBackupMatches() {
     tournamentData = [
         {
-            status: 'IN_PLAY',
+            status: 'FINISHED',
             utcDate: new Date().toISOString(),
             homeTeam: { name: "England" }, awayTeam: { name: "DR Congo" },
-            score: { fullTime: { home: 1, away: 0 } }
+            score: { fullTime: { home: 2, away: 0 } }
         },
         {
             status: 'TIMED',
