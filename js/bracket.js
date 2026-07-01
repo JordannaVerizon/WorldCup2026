@@ -8,7 +8,6 @@ function renderBracket(apiMatches) {
     const bracketElement = document.getElementById('bracket');
     if (!bracketElement) return;
 
-    // Helper to grab live calculations from our main app array data dynamically
     const getMatchData = (teamName) => {
         const found = apiMatches?.find(m => m.homeTeam === teamName);
         return found ? found : null;
@@ -18,24 +17,23 @@ function renderBracket(apiMatches) {
     const belMatch = getMatchData("Belgium");
     const usaMatch = getMatchData("USA");
 
-    // Knockout phases map loaded with localized timestamps
     const rounds = {
         "Round of 32": [
-            { t1: "Brazil", s1: 2, t2: "Japan", s2: 1, meta: "June 29 • Finaled" },
-            { t1: "France", s1: 3, t2: "Sweden", s2: 0, meta: "June 30 • Finaled" },
+            { t1: "Brazil", s1: 2, t2: "Japan", s2: 1, meta: "June 29 • Final" },
+            { t1: "France", s1: 3, t2: "Sweden", s2: 0, meta: "June 30 • Final" },
             { 
-                t1: "England", s1: engMatch ? engMatch.homeScore : 0, 
-                t2: "DR Congo", s2: engMatch ? engMatch.awayScore : 0, 
+                t1: "England", s1: engMatch && engMatch.status !== 'UPCOMING' ? engMatch.homeScore : 0, 
+                t2: "DR Congo", s2: engMatch && engMatch.status !== 'UPCOMING' ? engMatch.awayScore : 0, 
                 meta: engMatch ? engMatch.timeDisplay : "July 1 • 12:00 PM" 
             },
             { 
-                t1: "Belgium", s1: belMatch ? belMatch.homeScore : 0, 
-                t2: "Senegal", s2: belMatch ? belMatch.awayScore : 0, 
+                t1: "Belgium", s1: belMatch && belMatch.status !== 'UPCOMING' ? belMatch.homeScore : 0, 
+                t2: "Senegal", s2: belMatch && belMatch.status !== 'UPCOMING' ? belMatch.awayScore : 0, 
                 meta: belMatch ? belMatch.timeDisplay : "July 1 • 4:00 PM" 
             },
             { 
-                t1: "USA", s1: usaMatch ? usaMatch.homeScore : 0, 
-                t2: "Bosnia", s2: usaMatch ? usaMatch.awayScore : 0, 
+                t1: "USA", s1: usaMatch && usaMatch.status !== 'UPCOMING' ? usaMatch.homeScore : 0, 
+                t2: "Bosnia", s2: usaMatch && usaMatch.status !== 'UPCOMING' ? usaMatch.awayScore : 0, 
                 meta: usaMatch ? usaMatch.timeDisplay : "July 1 • 8:00 PM" 
             }
         ],
